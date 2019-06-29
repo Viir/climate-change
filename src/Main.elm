@@ -205,4 +205,4 @@ renderToHtml gameState =
         , Svg.Attributes.height (worldSizeY * cellSideLength |> String.fromInt)
         , Html.Attributes.style "background" "black"
         ]
-        [ skyHtml, snakeView, appleView ]
+        [ skyHtml ]
