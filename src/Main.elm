@@ -196,10 +196,13 @@ renderToHtml gameState =
 
         appleView =
             svgRectAtCellLocation "red" gameState.appleLocation
+
+        skyHtml =
+            svgRectFrom_Fill_Left_Top_Width_Height "skyblue" ( 0, 0 ) ( 1000, 1000 )
     in
     Svg.svg
         [ Svg.Attributes.width (worldSizeX * cellSideLength |> String.fromInt)
         , Svg.Attributes.height (worldSizeY * cellSideLength |> String.fromInt)
         , Html.Attributes.style "background" "black"
         ]
-        [ snakeView, appleView ]
+        [ skyHtml, snakeView, appleView ]
