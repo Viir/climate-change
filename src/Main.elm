@@ -9,14 +9,19 @@ import Svg
 import Svg.Attributes
 
 
-worldSizeX : Int
-worldSizeX =
-    16
+displaySizeX : Int
+displaySizeX =
+    400
 
 
-worldSizeY : Int
-worldSizeY =
-    12
+displaySizeY : Int
+displaySizeY =
+    300
+
+
+waterLevel : Int
+waterLevel =
+    (displaySizeY * 3) // 4
 
 
 type SnakeDirection
@@ -108,68 +113,7 @@ xyOffsetFromDirection direction =
 
 moveSnakeForwardOneStep : GameState -> GameState
 moveSnakeForwardOneStep gameStateBefore =
-    let
-        snakeBefore =
-            gameStateBefore.snake
-
-        headLocationBefore =
-            snakeBefore.headLocation
-
-        headMovement =
-            xyOffsetFromDirection snakeBefore.headDirection
-
-        headLocationBeforeWrapping =
-            { x = headLocationBefore.x + headMovement.x
-            , y = headLocationBefore.y + headMovement.y
-            }
-
-        headLocation =
-            { x = (headLocationBeforeWrapping.x + worldSizeX) |> modBy worldSizeX
-            , y = (headLocationBeforeWrapping.y + worldSizeY) |> modBy worldSizeY
-            }
-
-        snakeEats =
-            headLocation == gameStateBefore.appleLocation
-
-        tailSegmentsIfSnakeWereGrowing =
-            [ headLocationBefore ] ++ snakeBefore.tailSegments
-
-        tailSegments =
-            tailSegmentsIfSnakeWereGrowing
-                |> List.reverse
-                |> List.drop
-                    (if snakeEats then
-                        0
-
-                     else
-                        1
-                    )
-                |> List.reverse
-
-        appleLocation =
-            if not snakeEats then
-                gameStateBefore.appleLocation
-
-            else
-                let
-                    cellsLocationsWithoutSnake =
-                        List.range 0 (worldSizeX - 1)
-                            |> List.concatMap
-                                (\x ->
-                                    List.range 0 (worldSizeY - 1)
-                                        |> List.map (\y -> { x = x, y = y })
-                                )
-                            |> listRemoveSet ([ headLocation ] ++ tailSegments)
-                in
-                cellsLocationsWithoutSnake
-                    |> List.drop (15485863 |> modBy ((cellsLocationsWithoutSnake |> List.length) - 1))
-                    |> List.head
-                    |> Maybe.withDefault { x = -1, y = -1 }
-    in
-    { gameStateBefore
-        | snake = { snakeBefore | headLocation = headLocation, tailSegments = tailSegments }
-        , appleLocation = appleLocation
-    }
+    gameStateBefore
 
 
 renderToHtml : GameState -> Html.Html ()
@@ -201,11 +145,11 @@ renderToHtml gameState =
             svgRectFrom_Fill_Left_Top_Width_Height "skyblue" ( 0, 0 ) ( 1000, 1000 )
 
         waterHtml =
-            svgRectFrom_Fill_Left_Top_Width_Height "#1795d1" ( 0, 300 ) ( 1000, 1000 )
+            svgRectFrom_Fill_Left_Top_Width_Height "#1795d1" ( 0, waterLevel ) ( 1000, 1000 )
     in
     Svg.svg
-        [ Svg.Attributes.width (worldSizeX * cellSideLength |> String.fromInt)
-        , Svg.Attributes.height (worldSizeY * cellSideLength |> String.fromInt)
+        [ Svg.Attributes.width (displaySizeX |> String.fromInt)
+        , Svg.Attributes.height (displaySizeY |> String.fromInt)
         , Html.Attributes.style "background" "black"
         ]
         [ skyHtml, waterHtml ]
