@@ -53,7 +53,7 @@ main : SimpleGame GameState ()
 main =
     composeSimpleGame
         { updateIntervalInMilliseconds = 125
-        , updatePerInterval = moveSnakeForwardOneStep
+        , updatePerInterval = updatePerInterval
         , updateOnKeyDown = onKeyDown
         , updateOnKeyUp = always identity
         , renderToHtml = renderToHtml
@@ -74,9 +74,21 @@ onKeyDown keyboardEvent gameStateBefore =
     gameStateBefore
 
 
-moveSnakeForwardOneStep : GameState -> GameState
-moveSnakeForwardOneStep gameStateBefore =
-    gameStateBefore
+updatePerInterval : GameState -> GameState
+updatePerInterval gameStateBefore =
+    let
+        playerCharNewLocation =
+            { x = gameStateBefore.playerCharacter.location.x
+            , y = gameStateBefore.playerCharacter.location.y + 1
+            }
+
+        playerCharacterBefore =
+            gameStateBefore.playerCharacter
+
+        playerCharacter =
+            { playerCharacterBefore | location = playerCharNewLocation }
+    in
+    { gameStateBefore | playerCharacter = playerCharacter }
 
 
 renderToHtml : GameState -> Html.Html ()
