@@ -100,6 +100,36 @@ onKeyDown keyboardEvent gameStateBefore =
                 in
                 { gameStateBefore | playerCharacter = playerCharacter }
 
+            Keyboard.Key.Left ->
+                let
+                    playerCharacterBefore =
+                        gameStateBefore.playerCharacter
+
+                    playerCharacter =
+                        { playerCharacterBefore
+                            | velocityMilli =
+                                { x = playerCharacterBefore.velocityMilli.x - 1
+                                , y = playerCharacterBefore.velocityMilli.y
+                                }
+                        }
+                in
+                { gameStateBefore | playerCharacter = playerCharacter }
+
+            Keyboard.Key.Right ->
+                let
+                    playerCharacterBefore =
+                        gameStateBefore.playerCharacter
+
+                    playerCharacter =
+                        { playerCharacterBefore
+                            | velocityMilli =
+                                { x = playerCharacterBefore.velocityMilli.x + 1
+                                , y = playerCharacterBefore.velocityMilli.y
+                                }
+                        }
+                in
+                { gameStateBefore | playerCharacter = playerCharacter }
+
             _ ->
                 gameStateBefore
 
