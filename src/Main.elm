@@ -78,7 +78,26 @@ initialState =
 
 onKeyDown : KeyboardEvent -> GameState -> GameState
 onKeyDown keyboardEvent gameStateBefore =
-    gameStateBefore
+    if gameStateBefore |> isPlayerCharStandingOnIce |> not then
+        gameStateBefore
+
+    else
+        case keyboardEvent.keyCode of
+            Keyboard.Key.Up ->
+                let
+                    playerCharacterBefore =
+                        gameStateBefore.playerCharacter
+
+                    playerCharacter =
+                        { playerCharacterBefore
+                            | velocityMilli = { x = playerCharacterBefore.velocityMilli.x, y = -10 }
+                            , location = { x = playerCharacterBefore.location.x, y = playerCharacterBefore.location.y - 3 }
+                        }
+                in
+                { gameStateBefore | playerCharacter = playerCharacter }
+
+            _ ->
+                gameStateBefore
 
 
 updatePerInterval : GameState -> GameState
