@@ -29,6 +29,11 @@ iceFloeHeight =
     30
 
 
+playerCharHeight : Int
+playerCharHeight =
+    30
+
+
 type alias IceFloe =
     { size : Int
     , location : Location
@@ -52,7 +57,7 @@ type alias Location =
 main : SimpleGame GameState ()
 main =
     composeSimpleGame
-        { updateIntervalInMilliseconds = 125
+        { updateIntervalInMilliseconds = 30
         , updatePerInterval = updatePerInterval
         , updateOnKeyDown = onKeyDown
         , updateOnKeyUp = always identity
@@ -64,8 +69,8 @@ main =
 
 initialState : GameState
 initialState =
-    { iceFloes = [ { size = 40, location = { x = 100, y = waterLevel } } ]
-    , playerCharacter = { location = { x = 10, y = 100 } }
+    { iceFloes = [ { size = 140, location = { x = 80, y = waterLevel } } ]
+    , playerCharacter = { location = { x = 30, y = 100 } }
     }
 
 
@@ -77,9 +82,19 @@ onKeyDown keyboardEvent gameStateBefore =
 updatePerInterval : GameState -> GameState
 updatePerInterval gameStateBefore =
     let
+        playerCharFalls =
+            gameStateBefore |> isPlayerCharStandingOnIce |> not
+
         playerCharNewLocation =
             { x = gameStateBefore.playerCharacter.location.x
-            , y = gameStateBefore.playerCharacter.location.y + 1
+            , y =
+                gameStateBefore.playerCharacter.location.y
+                    + (if playerCharFalls then
+                        1
+
+                       else
+                        0
+                      )
             }
 
         playerCharacterBefore =
@@ -89,6 +104,26 @@ updatePerInterval gameStateBefore =
             { playerCharacterBefore | location = playerCharNewLocation }
     in
     { gameStateBefore | playerCharacter = playerCharacter }
+
+
+isPlayerCharStandingOnIce : GameState -> Bool
+isPlayerCharStandingOnIce gameState =
+    gameState.iceFloes
+        |> List.any
+            (\iceFloe ->
+                gameState.playerCharacter.location.x
+                    < iceFloe.location.x
+                    + iceFloe.size
+                    // 2
+                    && gameState.playerCharacter.location.x
+                    > iceFloe.location.x
+                    - iceFloe.size
+                    // 2
+                    && gameState.playerCharacter.location.y
+                    > iceFloe.location.y
+                    - (iceFloeHeight + playerCharHeight)
+                    // 2
+            )
 
 
 renderToHtml : GameState -> Html.Html ()
@@ -116,8 +151,8 @@ renderToHtml gameState =
         playerCharacterHtml =
             svgRectFrom_Fill_Left_Top_Width_Height
                 "black"
-                ( gameState.playerCharacter.location.x, gameState.playerCharacter.location.y )
-                ( 16, 30 )
+                ( gameState.playerCharacter.location.x, gameState.playerCharacter.location.y - playerCharHeight // 2 )
+                ( 16, playerCharHeight )
     in
     Svg.svg
         [ Svg.Attributes.width (displaySizeX |> String.fromInt)
