@@ -24,8 +24,12 @@ waterLevel =
     (displaySizeY * 3) // 4
 
 
-type alias GameState =
+type alias IceFloe =
     {}
+
+
+type alias GameState =
+    { floes : List IceFloe }
 
 
 type alias Location =
@@ -47,7 +51,7 @@ main =
 
 initialState : GameState
 initialState =
-    {}
+    { floes = [] }
 
 
 onKeyDown : KeyboardEvent -> GameState -> GameState
@@ -68,10 +72,20 @@ renderToHtml gameState =
 
         waterHtml =
             svgRectFrom_Fill_Left_Top_Width_Height "#1795d1" ( 0, waterLevel ) ( 1000, 1000 )
+
+        floeHtmlFromState : IceFloe -> Svg.Svg ()
+        floeHtmlFromState floeState =
+            Html.div [] []
+
+        floesHtml : Svg.Svg ()
+        floesHtml =
+            gameState.floes
+                |> List.map floeHtmlFromState
+                |> Svg.g []
     in
     Svg.svg
         [ Svg.Attributes.width (displaySizeX |> String.fromInt)
         , Svg.Attributes.height (displaySizeY |> String.fromInt)
         , Html.Attributes.style "background" "black"
         ]
-        [ skyHtml, waterHtml ]
+        [ skyHtml, waterHtml, floesHtml ]
