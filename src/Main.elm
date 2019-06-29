@@ -71,7 +71,11 @@ main =
 
 initialState : GameState
 initialState =
-    { iceFloes = [ { size = 140, location = { x = 80, y = waterLevel } } ]
+    { iceFloes =
+        [ { size = 130, location = { x = 80, y = waterLevel } }
+        , { size = 60, location = { x = 210, y = waterLevel } }
+        , { size = 50, location = { x = 300, y = waterLevel } }
+        ]
     , playerCharacter = { location = { x = 30, y = 100 }, velocityMilli = { x = 0, y = 0 } }
     }
 
