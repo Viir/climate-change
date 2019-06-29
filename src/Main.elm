@@ -47,7 +47,9 @@ type alias GameState =
 
 
 type alias PlayerCharacter =
-    { location : Location }
+    { location : Location
+    , velocityMilli : { x : Int, y : Int }
+    }
 
 
 type alias Location =
@@ -70,7 +72,7 @@ main =
 initialState : GameState
 initialState =
     { iceFloes = [ { size = 140, location = { x = 80, y = waterLevel } } ]
-    , playerCharacter = { location = { x = 30, y = 100 } }
+    , playerCharacter = { location = { x = 30, y = 100 }, velocityMilli = { x = 0, y = 0 } }
     }
 
 
@@ -82,26 +84,35 @@ onKeyDown keyboardEvent gameStateBefore =
 updatePerInterval : GameState -> GameState
 updatePerInterval gameStateBefore =
     let
-        playerCharFalls =
-            gameStateBefore |> isPlayerCharStandingOnIce |> not
-
-        playerCharNewLocation =
-            { x = gameStateBefore.playerCharacter.location.x
-            , y =
-                gameStateBefore.playerCharacter.location.y
-                    + (if playerCharFalls then
-                        1
-
-                       else
-                        0
-                      )
-            }
+        playerCharStandsOnIce =
+            gameStateBefore |> isPlayerCharStandingOnIce
 
         playerCharacterBefore =
             gameStateBefore.playerCharacter
 
+        playerVelocityMilli =
+            { x = playerCharacterBefore.velocityMilli.x
+            , y =
+                if playerCharStandsOnIce then
+                    0
+
+                else
+                    playerCharacterBefore.velocityMilli.y
+                        + 1
+            }
+
+        playerCharNewLocation =
+            { x = playerCharacterBefore.location.x + playerVelocityMilli.x
+            , y =
+                if playerCharStandsOnIce then
+                    waterLevel - (playerCharHeight + iceFloeHeight) // 2 + 1
+
+                else
+                    playerCharacterBefore.location.y + playerCharacterBefore.velocityMilli.y
+            }
+
         playerCharacter =
-            { playerCharacterBefore | location = playerCharNewLocation }
+            { playerCharacterBefore | velocityMilli = playerVelocityMilli, location = playerCharNewLocation }
     in
     { gameStateBefore | playerCharacter = playerCharacter }
 
