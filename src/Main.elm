@@ -43,6 +43,7 @@ type alias IceFloe =
 type alias GameState =
     { iceFloes : List IceFloe
     , playerCharacter : PlayerCharacter
+    , activeInput : Maybe ActiveInputDirection
     }
 
 
@@ -56,13 +57,18 @@ type alias Location =
     { x : Int, y : Int }
 
 
+type ActiveInputDirection
+    = Left
+    | Right
+
+
 main : SimpleGame GameState ()
 main =
     composeSimpleGame
         { updateIntervalInMilliseconds = 30
         , updatePerInterval = updatePerInterval
         , updateOnKeyDown = onKeyDown
-        , updateOnKeyUp = always identity
+        , updateOnKeyUp = onKeyUp
         , renderToHtml = renderToHtml
         , initialState = initialState
         , updateForEventFromHtml = always identity
@@ -77,6 +83,7 @@ initialState =
         , { size = 50, location = { x = 300, y = waterLevel } }
         ]
     , playerCharacter = { location = { x = 30, y = 100 }, velocityMilli = { x = 0, y = 0 } }
+    , activeInput = Nothing
     }
 
 
@@ -98,40 +105,21 @@ onKeyDown keyboardEvent gameStateBefore =
                             , location = { x = playerCharacterBefore.location.x, y = playerCharacterBefore.location.y - 3 }
                         }
                 in
-                { gameStateBefore | playerCharacter = playerCharacter }
+                { gameStateBefore | playerCharacter = playerCharacter, activeInput = Nothing }
 
             Keyboard.Key.Left ->
-                let
-                    playerCharacterBefore =
-                        gameStateBefore.playerCharacter
-
-                    playerCharacter =
-                        { playerCharacterBefore
-                            | velocityMilli =
-                                { x = playerCharacterBefore.velocityMilli.x - 1
-                                , y = playerCharacterBefore.velocityMilli.y
-                                }
-                        }
-                in
-                { gameStateBefore | playerCharacter = playerCharacter }
+                { gameStateBefore | activeInput = Just Left }
 
             Keyboard.Key.Right ->
-                let
-                    playerCharacterBefore =
-                        gameStateBefore.playerCharacter
-
-                    playerCharacter =
-                        { playerCharacterBefore
-                            | velocityMilli =
-                                { x = playerCharacterBefore.velocityMilli.x + 1
-                                , y = playerCharacterBefore.velocityMilli.y
-                                }
-                        }
-                in
-                { gameStateBefore | playerCharacter = playerCharacter }
+                { gameStateBefore | activeInput = Just Right }
 
             _ ->
-                gameStateBefore
+                { gameStateBefore | activeInput = Nothing }
+
+
+onKeyUp : KeyboardEvent -> GameState -> GameState
+onKeyUp _ gameStateBefore =
+    { gameStateBefore | activeInput = Nothing }
 
 
 updatePerInterval : GameState -> GameState
@@ -143,8 +131,19 @@ updatePerInterval gameStateBefore =
         playerCharacterBefore =
             gameStateBefore.playerCharacter
 
+        horizontalMovement =
+            case gameStateBefore.activeInput of
+                Nothing ->
+                    0
+
+                Just Left ->
+                    -1
+
+                Just Right ->
+                    1
+
         playerVelocityMilli =
-            { x = playerCharacterBefore.velocityMilli.x
+            { x = playerCharacterBefore.velocityMilli.x + horizontalMovement
             , y =
                 if playerCharStandsOnIce then
                     0
@@ -165,7 +164,10 @@ updatePerInterval gameStateBefore =
             }
 
         playerCharacter =
-            { playerCharacterBefore | velocityMilli = playerVelocityMilli, location = playerCharNewLocation }
+            { playerCharacterBefore
+                | velocityMilli = playerVelocityMilli
+                , location = playerCharNewLocation
+            }
     in
     { gameStateBefore | playerCharacter = playerCharacter }
 
