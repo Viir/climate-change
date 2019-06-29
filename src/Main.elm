@@ -36,7 +36,13 @@ type alias IceFloe =
 
 
 type alias GameState =
-    { iceFloes : List IceFloe }
+    { iceFloes : List IceFloe
+    , playerCharacter : PlayerCharacter
+    }
+
+
+type alias PlayerCharacter =
+    { location : Location }
 
 
 type alias Location =
@@ -58,7 +64,9 @@ main =
 
 initialState : GameState
 initialState =
-    { iceFloes = [ { size = 40, location = { x = 100, y = waterLevel } } ] }
+    { iceFloes = [ { size = 40, location = { x = 100, y = waterLevel } } ]
+    , playerCharacter = { location = { x = 10, y = 100 } }
+    }
 
 
 onKeyDown : KeyboardEvent -> GameState -> GameState
@@ -92,10 +100,16 @@ renderToHtml gameState =
             gameState.iceFloes
                 |> List.map iceFloeHtmlFromState
                 |> Svg.g []
+
+        playerCharacterHtml =
+            svgRectFrom_Fill_Left_Top_Width_Height
+                "black"
+                ( gameState.playerCharacter.location.x, gameState.playerCharacter.location.y )
+                ( 16, 30 )
     in
     Svg.svg
         [ Svg.Attributes.width (displaySizeX |> String.fromInt)
         , Svg.Attributes.height (displaySizeY |> String.fromInt)
         , Html.Attributes.style "background" "black"
         ]
-        [ skyHtml, waterHtml, iceHtml ]
+        [ skyHtml, waterHtml, iceHtml, playerCharacterHtml ]
