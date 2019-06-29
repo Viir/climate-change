@@ -24,12 +24,19 @@ waterLevel =
     (displaySizeY * 3) // 4
 
 
+iceFloeHeight : Int
+iceFloeHeight =
+    30
+
+
 type alias IceFloe =
-    {}
+    { size : Int
+    , location : Location
+    }
 
 
 type alias GameState =
-    { floes : List IceFloe }
+    { iceFloes : List IceFloe }
 
 
 type alias Location =
@@ -51,7 +58,7 @@ main =
 
 initialState : GameState
 initialState =
-    { floes = [] }
+    { iceFloes = [ { size = 40, location = { x = 100, y = waterLevel } } ] }
 
 
 onKeyDown : KeyboardEvent -> GameState -> GameState
@@ -73,14 +80,17 @@ renderToHtml gameState =
         waterHtml =
             svgRectFrom_Fill_Left_Top_Width_Height "#1795d1" ( 0, waterLevel ) ( 1000, 1000 )
 
-        floeHtmlFromState : IceFloe -> Svg.Svg ()
-        floeHtmlFromState floeState =
-            Html.div [] []
+        iceFloeHtmlFromState : IceFloe -> Svg.Svg ()
+        iceFloeHtmlFromState iceFloeState =
+            svgRectFrom_Fill_Left_Top_Width_Height
+                "whitesmoke"
+                ( iceFloeState.location.x - iceFloeState.size // 2, iceFloeState.location.y - iceFloeHeight // 2 )
+                ( iceFloeState.size, iceFloeHeight )
 
-        floesHtml : Svg.Svg ()
-        floesHtml =
-            gameState.floes
-                |> List.map floeHtmlFromState
+        iceHtml : Svg.Svg ()
+        iceHtml =
+            gameState.iceFloes
+                |> List.map iceFloeHtmlFromState
                 |> Svg.g []
     in
     Svg.svg
@@ -88,4 +98,4 @@ renderToHtml gameState =
         , Svg.Attributes.height (displaySizeY |> String.fromInt)
         , Html.Attributes.style "background" "black"
         ]
-        [ skyHtml, waterHtml, floesHtml ]
+        [ skyHtml, waterHtml, iceHtml ]
